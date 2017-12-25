@@ -67,29 +67,24 @@ class clone(threading.Thread):
 
 	def handle_events(self, data):
 		args = data.split()
-		if data.startswith('ERROR :Closing Link:'):
-			raise Exception('Connection has closed.')
-		elif args[0] == 'PING':
-			self.raw('PONG ' + args[1][1:])
-		elif args[1] == '001':
-			self.raw('OPER phalanx ' + oper_pass)
-		elif args[1] == '381':
-			self.raw('SETHOST ' + random_str(random_int(5,10)))
-		elif args[1] == '396':
-			self.raw(f'JOIN {channel} {key}')
-		elif args[1] == '433':
-			self.raw('NICK ' + random_str(random_int(5,6)))
+		if data.startswith('ERROR :Closing Link:') : raise Exception('Connection has closed.')
+		elif args[0] == 'PING' : self.raw('PONG ' + args[1][1:])
+		elif args[1] == '001'  : self.raw('OPER phalanx ' + oper_pass)
+		elif args[1] == '381'  : self.raw('SETHOST ' + random_str(random_int(5,10)))
+		elif args[1] == '396'  : self.raw(f'JOIN {channel} {key}')
+		elif args[1] == '433'  : self.raw('NICK ' + random_str(random_int(5,6)))
 		elif args[1] == 'PRIVMSG':
-			ident = args[0].split('!')[1]
-			msg   = data.split(f'{args[0]} PRIVMSG {args[2]} :')[1]
-			self.event_message(ident, msg)
+			try:
+				ident = args[0].split('!')[1]
+				msg   = data.split(f'{args[0]} PRIVMSG {args[2]} :')[1]
+				self.event_message(ident, msg)
+			except : pass
 
 	def listen(self):
 		while True:
 			try:
 				data = self.sock.recv(1024).decode('utf-8')
 				for line in (line for line in data.split('\r\n') if line):
-					#debug(line)
 					if len(line.split()) >= 2:
 						self.handle_events(line)
 			except (UnicodeDecodeError,UnicodeEncodeError):
